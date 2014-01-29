@@ -73,7 +73,8 @@ vecExp s = case listExp s of
 buildVectorST es =
   [| runSTVector (do
                      v <- newUndefinedVector $( lift (length es) )
-                     $( let buildWrites _i [] = [| return () |]
+                     $( let buildWrites :: Int -> [Exp] -> ExpQ
+                            buildWrites _i [] = [| return () |]
                             buildWrites i (exp:exps) = [| unsafeWriteVector v i $(return exp) >> $(buildWrites (i+1) exps) |]
                         in buildWrites 0 es)
                      return v) |]
