@@ -63,7 +63,7 @@ unList (TH.ListE l) = l
 
 -- | Parser for matrix expressions. Returns (outer length, inner length, matrix)
 matListExp :: String -> Either String (Int, Int, [[TH.Exp]])
-matListExp s = case breakOnSemis HSE.parseExp MT.parseExp s of
+matListExp s = case breakOnSemis HSE.parseExp MT.parseExp (expandTabs s) of
   Right rows@(r:_) ->
     let
       rowLen = length (unList r)
@@ -78,7 +78,7 @@ unPList (TH.ListP l) = l
 
 -- | Parser for matrix patterns. Returns (outer length, inner length, matrix)
 matListPat :: String -> Either String (Int, Int, [[TH.Pat]])
-matListPat s = case breakOnSemis HSE.parsePat MT.parsePat s of
+matListPat s = case breakOnSemis HSE.parsePat MT.parsePat (expandTabs s) of
   Right rows@(r:_) ->
     let
       rowLen = length (unPList r)
@@ -88,3 +88,9 @@ matListPat s = case breakOnSemis HSE.parsePat MT.parsePat s of
      then return (rowLen, colLen, map unPList rows)
      else fail "Not all rows have the same length"
   Left msg -> fail msg
+
+
+expandTabs :: String -> String
+expandTabs ('\t' : xs) = "        " ++ expandTabs xs
+expandTabs (x : xs) = x : expandTabs xs
+expandTabs [] = []
